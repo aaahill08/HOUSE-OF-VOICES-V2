@@ -7,9 +7,11 @@ import {
   getDocs,
   query,
   where,
+  addDoc,
 } from "firebase/firestore";
 
 import { db } from "@/firebase/config";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Story {
   id: string;
@@ -24,6 +26,8 @@ export default function ProfilePage({
 }) {
   const { uid } = use(params);
 
+  const { user } = useAuth();
+
   const [stories, setStories] =
     useState<Story[]>([]);
 
@@ -32,6 +36,15 @@ export default function ProfilePage({
 
   const [totalLikes, setTotalLikes] =
     useState(0);
+
+  const [followers, setFollowers] =
+    useState(0);
+
+  const [following, setFollowing] =
+    useState(0);
+
+  const [isFollowing, setIsFollowing] =
+    useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -65,10 +78,91 @@ export default function ProfilePage({
       });
 
       setTotalLikes(likes);
+
+      const followersSnapshot =
+        await getDocs(
+          query(
+            collection(db, "follows"),
+            where(
+              "followingId",
+              "==",
+              uid
+            )
+          )
+        );
+
+      setFollowers(
+        followersSnapshot.size
+      );
+
+      const followingSnapshot =
+        await getDocs(
+          query(
+            collection(db, "follows"),
+            where(
+              "followerId",
+              "==",
+              uid
+            )
+          )
+        );
+
+      setFollowing(
+        followingSnapshot.size
+      );
+
+      if (user) {
+        const existingFollow =
+          await getDocs(
+            query(
+              collection(db, "follows"),
+              where(
+                "followerId",
+                "==",
+                user.uid
+              ),
+              where(
+                "followingId",
+                "==",
+                uid
+              )
+            )
+          );
+
+        setIsFollowing(
+          !existingFollow.empty
+        );
+      }
     };
 
     fetchProfile();
-  }, [uid]);
+  }, [uid, user]);
+
+  const handleFollow =
+    async () => {
+      if (
+        !user ||
+        user.uid === uid ||
+        isFollowing
+      )
+        return;
+
+      await addDoc(
+        collection(db, "follows"),
+        {
+          followerId:
+            user.uid,
+
+          followingId: uid,
+        }
+      );
+
+      setFollowers(
+        followers + 1
+      );
+
+      setIsFollowing(true);
+    };
 
   return (
     <main className="min-h-screen bg-[#F6F1EA] px-6 py-20">
@@ -80,7 +174,7 @@ export default function ProfilePage({
             {authorName || "Author"}
           </h1>
 
-          <div className="mt-6 flex gap-8">
+          <div className="mt-6 flex flex-wrap gap-8">
 
             <div>
               <p className="text-gray-500">
@@ -102,7 +196,49 @@ export default function ProfilePage({
               </p>
             </div>
 
+            <div>
+              <p className="text-gray-500">
+                Followers
+              </p>
+
+              <p className="text-2xl font-bold">
+                {followers}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-gray-500">
+                Following
+              </p>
+
+              <p className="text-2xl font-bold">
+                {following}
+              </p>
+            </div>
+
           </div>
+
+          {user &&
+            user.uid !== uid && (
+              <button
+                onClick={
+                  handleFollow
+                }
+                disabled={
+                  isFollowing
+                }
+                className={`mt-8 rounded-xl px-6 py-3 ${
+                  isFollowing
+                    ? "bg-gray-300"
+                    : "bg-[#1E3D30] text-white"
+                }`}
+              >
+                {isFollowing
+                  ? "Following"
+                  : "Follow"}
+              </button>
+            )}
+
         </div>
 
         <div className="mt-10">

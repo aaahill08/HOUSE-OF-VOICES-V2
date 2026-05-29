@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Link from "next/link";
 
 import {
   doc,
@@ -20,6 +21,7 @@ interface Story {
   title: string;
   content: string;
   authorName: string;
+  authorId: string;
   likes: number;
   likedBy?: string[];
 }
@@ -190,9 +192,13 @@ export default function StoryPage({
         </h1>
 
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-gray-500">
+
+          <Link
+            href={`/profile/${story.authorId}`}
+            className="text-gray-500 hover:text-[#1E3D30] hover:underline"
+          >
             By {story.authorName}
-          </p>
+          </Link>
 
           <button
             onClick={handleLike}
@@ -205,6 +211,7 @@ export default function StoryPage({
           >
             ❤️ {story.likes || 0}
           </button>
+
         </div>
 
         <div className="mt-10 whitespace-pre-wrap text-lg leading-relaxed">
