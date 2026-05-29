@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import { User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase/config";
+import { auth } from "@/firebase/config";
 
 type AuthContextType = {
   user: User | null;
@@ -39,7 +39,7 @@ export function AuthProvider({
         setLoading(false);
       });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -51,5 +51,6 @@ export function AuthProvider({
   );
 }
 
-export const useAuth = () =>
-  useContext(AuthContext);
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
