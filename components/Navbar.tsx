@@ -71,14 +71,16 @@ export default function Navbar() {
             </Link>
 
             {user.photoURL && (
-              <Image
-                src={user.photoURL}
-                alt="Profile"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-            )}
+  <Link href={`/profile/${user.uid}`}>
+    <Image
+      src={user.photoURL}
+      alt="Profile"
+      width={40}
+      height={40}
+      className="cursor-pointer rounded-full"
+    />
+  </Link>
+)}
 
             <button
               onClick={handleLogout}
