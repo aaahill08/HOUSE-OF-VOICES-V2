@@ -13,8 +13,9 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await signOut(auth);
-  };
+  setMenuOpen(false);
+  await signOut(auth);
+};
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-[#F6F1EA]/90 backdrop-blur-md">
