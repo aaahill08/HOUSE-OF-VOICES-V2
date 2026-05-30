@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
 } from "firebase/auth";
 
 import { auth } from "@/firebase/config";
@@ -14,24 +12,6 @@ import { auth } from "@/firebase/config";
 export default function GoogleLoginButton() {
   const [loading, setLoading] =
     useState(false);
-
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          console.log(
-            "REDIRECT LOGIN SUCCESS:",
-            result.user.uid
-          );
-        }
-      })
-      .catch((error) => {
-        console.error(
-          "REDIRECT ERROR:",
-          error
-        );
-      });
-  }, []);
 
   const handleGoogleLogin =
     async () => {
@@ -47,27 +27,15 @@ export default function GoogleLoginButton() {
           prompt: "select_account",
         });
 
-        const isMobile =
-          /Android|iPhone|iPad|iPod/i.test(
-            navigator.userAgent
-          );
-
-        console.log(
-          "IS MOBILE:",
-          isMobile
-        );
-
-        if (isMobile) {
-          await signInWithRedirect(
+        const result =
+          await signInWithPopup(
             auth,
             provider
           );
-          return;
-        }
 
-        await signInWithPopup(
-          auth,
-          provider
+        console.log(
+          "LOGIN SUCCESS:",
+          result.user.uid
         );
       } catch (error) {
         console.error(
@@ -76,7 +44,7 @@ export default function GoogleLoginButton() {
         );
 
         alert(
-          "Google login failed. Check console."
+          "Google login failed."
         );
       } finally {
         setLoading(false);
