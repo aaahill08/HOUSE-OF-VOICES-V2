@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from "firebase/auth";
@@ -9,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navbar() {
   const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -52,7 +54,12 @@ export default function Navbar() {
           </Link>
 
         </div>
-
+        <button
+  onClick={() => setMenuOpen(!menuOpen)}
+  className="text-3xl md:hidden"
+>
+  ☰
+</button>
         {!user ? (
           <Link
             href="/login"
@@ -77,7 +84,7 @@ export default function Navbar() {
       alt="Profile"
       width={40}
       height={40}
-      className="cursor-pointer rounded-full"
+      className="cursor-pointer rounded-full border-2 border-[#1E3D30]"
     />
   </Link>
 )}
@@ -92,6 +99,33 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      {menuOpen && (
+  <div className="border-t bg-[#F6F1EA] md:hidden">
+    <div className="flex flex-col gap-4 p-4">
+
+      <Link href="/">Home</Link>
+
+      <Link href="/blogs">Blogs</Link>
+
+      <Link href="/search">Search</Link>
+
+      <Link href="/saved">Saved</Link>
+
+      {user && (
+        <>
+          <Link href="/dashboard">
+            Dashboard
+          </Link>
+
+          <Link href={`/profile/${user.uid}`}>
+            Profile
+          </Link>
+        </>
+      )}
+
+    </div>
+  </div>
+)}
     </nav>
   );
 }
