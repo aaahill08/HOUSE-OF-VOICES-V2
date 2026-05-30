@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
+  getRedirectResult,
 } from "firebase/auth";
 
 import { auth } from "@/firebase/config";
@@ -13,6 +14,24 @@ import { auth } from "@/firebase/config";
 export default function GoogleLoginButton() {
   const [loading, setLoading] =
     useState(false);
+
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          console.log(
+            "REDIRECT LOGIN SUCCESS:",
+            result.user.uid
+          );
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "REDIRECT ERROR:",
+          error
+        );
+      });
+  }, []);
 
   const handleGoogleLogin =
     async () => {
