@@ -20,21 +20,34 @@ export default function CreateStory() {
   const [content, setContent] =
     useState("");
 
-  const publishStory = async () => {
-    if (!title || !content) {
+  const [category, setCategory] =
+    useState("Life");
+
+  const submitStory = async () => {
+    if (
+      !title ||
+      !content ||
+      !category
+    ) {
       alert("Please fill all fields");
       return;
     }
 
     try {
-      await addDoc(
-        collection(db, "stories"),
+      const docRef = await addDoc(
+        collection(
+          db,
+          "pendingStories"
+        ),
         {
           title,
           content,
 
+          category,
+
           authorName:
-            user?.displayName || "Anonymous",
+            user?.displayName ||
+            "Anonymous",
 
           authorId:
             user?.uid || "",
@@ -42,8 +55,10 @@ export default function CreateStory() {
           authorPhoto:
             user?.photoURL || "",
 
-          createdAt:
+          submittedAt:
             serverTimestamp(),
+
+          status: "pending",
 
           likes: 0,
 
@@ -53,52 +68,111 @@ export default function CreateStory() {
         }
       );
 
+      console.log(
+        "SUCCESS:",
+        docRef.id
+      );
+
       alert(
-        "Story published successfully!"
+        "Story submitted for review successfully!"
       );
 
       setTitle("");
       setContent("");
+      setCategory("Life");
     } catch (error) {
-      console.error(error);
+      console.error(
+        "FIRESTORE ERROR:",
+        error
+      );
 
-      alert("Failed to publish story");
+      alert(
+        "Failed to submit story"
+      );
     }
   };
 
   return (
     <main className="min-h-screen bg-[#F6F1EA] px-6 py-20">
       <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow">
-        <h1 className="mb-8 text-4xl font-bold text-[#1E3D30]">
-          Create Story
+
+        <h1 className="mb-2 text-4xl font-bold text-[#1E3D30]">
+          Submit Story
         </h1>
+
+        <p className="mb-8 text-gray-600">
+          Your story will be reviewed by an admin before publication.
+        </p>
 
         <input
           type="text"
           placeholder="Story Title"
           value={title}
           onChange={(e) =>
-            setTitle(e.target.value)
+            setTitle(
+              e.target.value
+            )
           }
           className="mb-4 w-full rounded-xl border p-4"
         />
+
+        <select
+          value={category}
+          onChange={(e) =>
+            setCategory(
+              e.target.value
+            )
+          }
+          className="mb-4 w-full rounded-xl border p-4"
+        >
+          <option value="Life">
+            Life
+          </option>
+
+          <option value="Technology">
+            Technology
+          </option>
+
+          <option value="Mental Health">
+            Mental Health
+          </option>
+
+          <option value="Education">
+            Education
+          </option>
+
+          <option value="Gaming">
+            Gaming
+          </option>
+
+          <option value="Poetry">
+            Poetry
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+        </select>
 
         <textarea
           placeholder="Write your story..."
           value={content}
           onChange={(e) =>
-            setContent(e.target.value)
+            setContent(
+              e.target.value
+            )
           }
           rows={10}
           className="mb-6 w-full rounded-xl border p-4"
         />
 
         <button
-          onClick={publishStory}
+          onClick={submitStory}
           className="rounded-xl bg-[#1E3D30] px-6 py-3 text-white hover:opacity-90"
         >
-          Publish Story
+          Submit For Review
         </button>
+
       </div>
     </main>
   );

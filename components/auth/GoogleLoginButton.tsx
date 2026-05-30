@@ -1,30 +1,80 @@
 "use client";
 
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useState } from "react";
+
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+} from "firebase/auth";
+
 import { auth } from "@/firebase/config";
 
 export default function GoogleLoginButton() {
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
+  const [loading, setLoading] =
+    useState(false);
 
-      const result = await signInWithPopup(
-        auth,
-        provider
-      );
+  const handleGoogleLogin =
+    async () => {
+      if (loading) return;
 
-      console.log("Logged in:", result.user);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+      try {
+        setLoading(true);
+
+        const provider =
+          new GoogleAuthProvider();
+
+        provider.setCustomParameters({
+          prompt: "select_account",
+        });
+
+        const isMobile =
+          /Android|iPhone|iPad|iPod/i.test(
+            navigator.userAgent
+          );
+
+        console.log(
+          "IS MOBILE:",
+          isMobile
+        );
+
+        if (isMobile) {
+          await signInWithRedirect(
+            auth,
+            provider
+          );
+          return;
+        }
+
+        await signInWithPopup(
+          auth,
+          provider
+        );
+      } catch (error) {
+        console.error(
+          "GOOGLE LOGIN ERROR:",
+          error
+        );
+
+        alert(
+          "Google login failed. Check console."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <button
-      onClick={handleGoogleLogin}
-      className="px-6 py-3 bg-black text-white rounded-lg"
+      onClick={
+        handleGoogleLogin
+      }
+      disabled={loading}
+      className="rounded-xl bg-black px-6 py-3 text-white transition hover:opacity-90 disabled:opacity-50"
     >
-      Continue with Google
+      {loading
+        ? "Signing In..."
+        : "Continue with Google"}
     </button>
   );
 }

@@ -12,6 +12,9 @@ import {
   addDoc,
   getDocs,
   serverTimestamp,
+  deleteDoc,
+  query,
+  where,
 } from "firebase/firestore";
 
 import { db } from "@/firebase/config";
@@ -45,6 +48,9 @@ export default function StoryPage({
     useState<Story | null>(null);
 
   const [liked, setLiked] =
+    useState(false);
+
+  const [bookmarked, setBookmarked] =
     useState(false);
 
   const [comments, setComments] =
@@ -101,12 +107,49 @@ export default function StoryPage({
       setComments(commentData);
     };
 
+    const checkBookmark =
+      async () => {
+        if (!user) return;
+
+        const bookmarkQuery =
+          query(
+            collection(
+              db,
+              "bookmarks"
+            ),
+            where(
+              "userId",
+              "==",
+              user.uid
+            ),
+            where(
+              "storyId",
+              "==",
+              id
+            )
+          );
+
+        const snapshot =
+          await getDocs(
+            bookmarkQuery
+          );
+
+        setBookmarked(
+          !snapshot.empty
+        );
+      };
+
     fetchStory();
     fetchComments();
+    checkBookmark();
   }, [id, user]);
 
   const handleLike = async () => {
-    if (!user || !story || liked)
+    if (
+      !user ||
+      !story ||
+      liked
+    )
       return;
 
     const docRef = doc(
@@ -133,8 +176,96 @@ export default function StoryPage({
     setLiked(true);
   };
 
+  const handleBookmark =
+    async () => {
+      if (!user || !story)
+        return;
+
+      try {
+        const bookmarkQuery =
+          query(
+            collection(
+              db,
+              "bookmarks"
+            ),
+            where(
+              "userId",
+              "==",
+              user.uid
+            ),
+            where(
+              "storyId",
+              "==",
+              id
+            )
+          );
+
+        const snapshot =
+          await getDocs(
+            bookmarkQuery
+          );
+
+        if (!snapshot.empty) {
+          await deleteDoc(
+            doc(
+              db,
+              "bookmarks",
+              snapshot.docs[0].id
+            )
+          );
+
+          setBookmarked(
+            false
+          );
+
+          alert(
+            "Bookmark removed!"
+          );
+
+          return;
+        }
+
+        await addDoc(
+          collection(
+            db,
+            "bookmarks"
+          ),
+          {
+            userId:
+              user.uid,
+
+            storyId: id,
+
+            title:
+              story.title,
+
+            authorName:
+              story.authorName,
+
+            createdAt:
+              serverTimestamp(),
+          }
+        );
+
+        setBookmarked(true);
+
+        alert(
+          "Story saved!"
+        );
+      } catch (error) {
+        console.error(error);
+
+        alert(
+          "Failed to update bookmark"
+        );
+      }
+    };
+
   const postComment = async () => {
-    if (!user || !newComment)
+    if (
+      !user ||
+      !newComment.trim()
+    )
       return;
 
     await addDoc(
@@ -154,7 +285,8 @@ export default function StoryPage({
         photoURL:
           user.photoURL || "",
 
-        comment: newComment,
+        comment:
+          newComment,
 
         createdAt:
           serverTimestamp(),
@@ -168,7 +300,8 @@ export default function StoryPage({
         name:
           user.displayName ||
           "Anonymous",
-        comment: newComment,
+        comment:
+          newComment,
       },
     ]);
 
@@ -200,17 +333,39 @@ export default function StoryPage({
             By {story.authorName}
           </Link>
 
-          <button
-            onClick={handleLike}
-            disabled={liked}
-            className={`rounded-xl px-4 py-2 ${
-              liked
-                ? "bg-red-500 text-white"
-                : "bg-gray-100"
-            }`}
-          >
-            ❤️ {story.likes || 0}
-          </button>
+          <div className="flex gap-3">
+
+            <button
+              onClick={
+                handleBookmark
+              }
+              className={`rounded-xl px-4 py-2 ${
+                bookmarked
+                  ? "bg-yellow-500 text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              {bookmarked
+                ? "🔖 Saved"
+                : "🔖 Save"}
+            </button>
+
+            <button
+              onClick={
+                handleLike
+              }
+              disabled={liked}
+              className={`rounded-xl px-4 py-2 ${
+                liked
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              ❤️{" "}
+              {story.likes || 0}
+            </button>
+
+          </div>
 
         </div>
 
@@ -219,32 +374,45 @@ export default function StoryPage({
         </div>
 
         <div className="mt-16 border-t pt-10">
+
           <h2 className="text-3xl font-bold">
-            Comments ({comments.length})
+            Comments (
+            {comments.length})
           </h2>
 
           <div className="mt-6 space-y-4">
+
             {comments.map(
               (comment) => (
                 <div
-                  key={comment.id}
+                  key={
+                    comment.id
+                  }
                   className="rounded-xl bg-gray-100 p-4"
                 >
                   <p className="font-semibold">
-                    {comment.name}
+                    {
+                      comment.name
+                    }
                   </p>
 
                   <p className="mt-2">
-                    {comment.comment}
+                    {
+                      comment.comment
+                    }
                   </p>
                 </div>
               )
             )}
+
           </div>
 
           <div className="mt-8">
+
             <textarea
-              value={newComment}
+              value={
+                newComment
+              }
               onChange={(e) =>
                 setNewComment(
                   e.target.value
@@ -256,12 +424,16 @@ export default function StoryPage({
             />
 
             <button
-              onClick={postComment}
+              onClick={
+                postComment
+              }
               className="mt-4 rounded-xl bg-[#1E3D30] px-6 py-3 text-white"
             >
               Post Comment
             </button>
+
           </div>
+
         </div>
 
       </div>

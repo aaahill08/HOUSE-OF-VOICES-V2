@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Image from "next/image";
 
 import {
   collection,
@@ -8,6 +9,8 @@ import {
   query,
   where,
   addDoc,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 import { db } from "@/firebase/config";
@@ -17,6 +20,12 @@ interface Story {
   id: string;
   title: string;
   likes?: number;
+}
+
+interface UserProfile {
+  displayName?: string;
+  bio?: string;
+  photoURL?: string;
 }
 
 export default function ProfilePage({
@@ -30,6 +39,9 @@ export default function ProfilePage({
 
   const [stories, setStories] =
     useState<Story[]>([]);
+
+  const [profile, setProfile] =
+    useState<UserProfile | null>(null);
 
   const [authorName, setAuthorName] =
     useState("");
@@ -48,6 +60,21 @@ export default function ProfilePage({
 
   useEffect(() => {
     const fetchProfile = async () => {
+      const userRef = doc(
+        db,
+        "users",
+        uid
+      );
+
+      const userSnap =
+        await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        setProfile(
+          userSnap.data() as UserProfile
+        );
+      }
+
       const q = query(
         collection(db, "stories"),
         where("authorId", "==", uid)
@@ -170,11 +197,33 @@ export default function ProfilePage({
 
         <div className="rounded-2xl bg-white p-10 shadow">
 
-          <h1 className="text-5xl font-bold text-[#1E3D30]">
-            {authorName || "Author"}
-          </h1>
+          <div className="flex flex-col items-center text-center">
 
-          <div className="mt-6 flex flex-wrap gap-8">
+            {profile?.photoURL && (
+              <Image
+                src={profile.photoURL}
+                alt="Profile"
+                width={120}
+                height={120}
+                className="mb-4 rounded-full"
+              />
+            )}
+
+            <h1 className="text-5xl font-bold text-[#1E3D30]">
+              {profile?.displayName ||
+                authorName ||
+                "Author"}
+            </h1>
+
+            {profile?.bio && (
+              <p className="mt-4 max-w-2xl text-gray-600">
+                {profile.bio}
+              </p>
+            )}
+
+          </div>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-8">
 
             <div>
               <p className="text-gray-500">
@@ -220,23 +269,25 @@ export default function ProfilePage({
 
           {user &&
             user.uid !== uid && (
-              <button
-                onClick={
-                  handleFollow
-                }
-                disabled={
-                  isFollowing
-                }
-                className={`mt-8 rounded-xl px-6 py-3 ${
-                  isFollowing
-                    ? "bg-gray-300"
-                    : "bg-[#1E3D30] text-white"
-                }`}
-              >
-                {isFollowing
-                  ? "Following"
-                  : "Follow"}
-              </button>
+              <div className="mt-8 text-center">
+                <button
+                  onClick={
+                    handleFollow
+                  }
+                  disabled={
+                    isFollowing
+                  }
+                  className={`rounded-xl px-6 py-3 ${
+                    isFollowing
+                      ? "bg-gray-300"
+                      : "bg-[#1E3D30] text-white"
+                  }`}
+                >
+                  {isFollowing
+                    ? "Following"
+                    : "Follow"}
+                </button>
+              </div>
             )}
 
         </div>
