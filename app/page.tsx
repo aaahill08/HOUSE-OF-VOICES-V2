@@ -17,20 +17,20 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex gap-4">
-          <Link
-            href="/blogs"
-            className="rounded-xl bg-[#1E3D30] px-8 py-4 text-white hover:opacity-90"
-          >
-            Explore Blogs
-          </Link>
+  <Link
+    href="/blogs"
+    className="rounded-xl bg-[#1E3D30] px-8 py-4 text-white hover:opacity-90"
+  >
+    Explore Blogs
+  </Link>
 
-          <Link
-            href="/login"
-            className="rounded-xl border-2 border-[#1E3D30] px-8 py-4 text-[#1E3D30]"
-          >
-            Join Community
-          </Link>
-        </div>
+  <Link
+    href="/login"
+    className="rounded-xl border-2 border-[#1E3D30] px-8 py-4 text-[#1E3D30]"
+  >
+    Join Community
+  </Link>
+</div>
       </section>
 
       {/* Rest of your page stays exactly the same */}

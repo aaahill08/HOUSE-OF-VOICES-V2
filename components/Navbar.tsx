@@ -18,8 +18,10 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-[#F6F1EA]/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
 
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+
+        {/* Logo */}
         <Link
           href="/"
           className="text-2xl font-bold text-[#1E3D30]"
@@ -27,6 +29,7 @@ export default function Navbar() {
           House of Voices
         </Link>
 
+        {/* Desktop Menu */}
         <div className="hidden gap-8 font-medium md:flex">
 
           <Link href="/">
@@ -45,30 +48,26 @@ export default function Navbar() {
             Saved
           </Link>
 
-          <Link href="/events">
-            Events
-          </Link>
-
-          <Link href="/community">
-            Community
-          </Link>
-
         </div>
+
+        {/* Mobile Hamburger */}
         <button
-  onClick={() => setMenuOpen(!menuOpen)}
-  className="text-3xl md:hidden"
->
-  ☰
-</button>
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="text-3xl md:hidden"
+        >
+          ☰
+        </button>
+
+        {/* Desktop User Section */}
         {!user ? (
           <Link
             href="/login"
-            className="rounded-xl bg-[#1E3D30] px-5 py-2 text-white"
+            className="hidden rounded-xl bg-[#1E3D30] px-5 py-2 text-white md:block"
           >
             Login
           </Link>
         ) : (
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
 
             <Link
               href="/dashboard"
@@ -78,16 +77,16 @@ export default function Navbar() {
             </Link>
 
             {user.photoURL && (
-  <Link href={`/profile/${user.uid}`}>
-    <Image
-      src={user.photoURL}
-      alt="Profile"
-      width={40}
-      height={40}
-      className="cursor-pointer rounded-full border-2 border-[#1E3D30]"
-    />
-  </Link>
-)}
+              <Link href={`/profile/${user.uid}`}>
+                <Image
+                  src={user.photoURL}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="cursor-pointer rounded-full border-2 border-[#1E3D30]"
+                />
+              </Link>
+            )}
 
             <button
               onClick={handleLogout}
@@ -98,34 +97,82 @@ export default function Navbar() {
 
           </div>
         )}
+
       </div>
+
+      {/* Mobile Menu */}
       {menuOpen && (
-  <div className="border-t bg-[#F6F1EA] md:hidden">
-    <div className="flex flex-col gap-4 p-4">
+        <div className="border-t bg-[#F6F1EA] md:hidden">
 
-      <Link href="/">Home</Link>
+          <div className="flex flex-col gap-4 p-4">
 
-      <Link href="/blogs">Blogs</Link>
+            <Link
+              href="/"
+              onClick={() => setMenuOpen(false)}
+            >
+              Home
+            </Link>
 
-      <Link href="/search">Search</Link>
+            <Link
+              href="/blogs"
+              onClick={() => setMenuOpen(false)}
+            >
+              Blogs
+            </Link>
 
-      <Link href="/saved">Saved</Link>
+            <Link
+              href="/search"
+              onClick={() => setMenuOpen(false)}
+            >
+              Search
+            </Link>
 
-      {user && (
-        <>
-          <Link href="/dashboard">
-            Dashboard
-          </Link>
+            <Link
+              href="/saved"
+              onClick={() => setMenuOpen(false)}
+            >
+              Saved
+            </Link>
 
-          <Link href={`/profile/${user.uid}`}>
-            Profile
-          </Link>
-        </>
+            {user && (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+
+                <Link
+                  href={`/profile/${user.uid}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-fit rounded-lg bg-red-500 px-4 py-2 text-white"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+
+            {!user && (
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+              >
+                Login
+              </Link>
+            )}
+
+          </div>
+
+        </div>
       )}
 
-    </div>
-  </div>
-)}
     </nav>
   );
 }
